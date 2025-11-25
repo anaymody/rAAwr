@@ -34,5 +34,9 @@
   "Bald Eagle": {
     "FunFact": "Bald eagles can spot prey up to 3 miles away.",
     "Reason": "They rarely interact physically with disease vectors, making infection unrealistic."
+  },
+  "Elk": {
+    "FunFact": "Elk can produce loud bugling calls that can be heard over a mile away during mating season.",
+    "Reason": "Their strong social hierarchy and seasonal migration patterns make close, sustained contact with infected creatures unlikely in typical gameplay."
   }
 }
