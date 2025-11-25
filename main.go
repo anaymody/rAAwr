@@ -2,7 +2,10 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"strings"
@@ -11,22 +14,15 @@ import (
 
 type Mobility string
 
-const (
-	Walk  Mobility = "walk"
-	Fly   Mobility = "fly"
-	Swim  Mobility = "swim"
-	Climb Mobility = "climb"
-)
-
 type Animal struct {
-	Name          string
-	Level         int
-	Mobility      Mobility
-	Intelligence  int
-	Contacts      []string
-	Infected      bool
-	InfectionRate float64
-	Location      string
+	Name          string   `json:"Name"`
+	Level         int      `json:"Level"`
+	Mobility      string   `json:"Mobility"`
+	Intelligence  int      `json:"Intelligence"`
+	Contacts      []string `json:"Contacts"`
+	Infected      bool     `json:"Infected"`
+	InfectionRate float64  `json:"InfectionRate"`
+	Location      string   `json:"Location"`
 }
 
 type Virus struct {
@@ -34,59 +30,32 @@ type Virus struct {
 	Strength float64
 }
 
-// -------------------- Hardcoded Data --------------------
+// -------- JSON Loader --------
 
-func LoadYellowstoneAnimals() map[string]*Animal {
-	return map[string]*Animal{
-		"Grizzly Bear": {
-			Name:          "Grizzly Bear",
-			Level:         3,
-			Mobility:      Walk,
-			Intelligence:  7,
-			Contacts:      []string{"Wolf", "Tourist", "Bison"},
-			InfectionRate: 0.4,
-			Location:      "Forest",
-		},
-		"Wolf": {
-			Name:          "Wolf",
-			Level:         3,
-			Mobility:      Walk,
-			Intelligence:  6,
-			Contacts:      []string{"Elk", "Bison", "Grizzly Bear"},
-			InfectionRate: 0.55,
-			Location:      "Mountains",
-		},
-		"Bison": {
-			Name:          "Bison",
-			Level:         2,
-			Mobility:      Walk,
-			Intelligence:  3,
-			Contacts:      []string{"Wolf", "Elk"},
-			InfectionRate: 0.25,
-			Location:      "Grassland",
-		},
-		"Elk": {
-			Name:          "Elk",
-			Level:         2,
-			Mobility:      Walk,
-			Intelligence:  2,
-			Contacts:      []string{"Wolf", "Bison"},
-			InfectionRate: 0.3,
-			Location:      "Valley",
-		},
-		"Tourist": {
-			Name:          "Tourist",
-			Level:         1,
-			Mobility:      Walk,
-			Intelligence:  9,
-			Contacts:      []string{"Grizzly Bear", "Wolf"},
-			InfectionRate: 0.75,
-			Location:      "Campsite",
-		},
+func LoadAnimalsFromJSON(filepath string) map[string]*Animal {
+	jsonFile, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		log.Fatalf("❌ Failed to load JSON file: %v", err)
 	}
+
+	var data struct {
+		Animals []*Animal `json:"animals"`
+	}
+
+	err = json.Unmarshal(jsonFile, &data)
+	if err != nil {
+		log.Fatalf("❌ Failed to parse JSON: %v", err)
+	}
+
+	animalMap := make(map[string]*Animal)
+	for _, a := range data.Animals {
+		animalMap[a.Name] = a
+	}
+
+	return animalMap
 }
 
-// -------------------- Infection Attempt --------------------
+// -------- Infection System --------
 
 func attemptInfection(source *Animal, target *Animal, v *Virus) bool {
 	rand.Seed(time.Now().UnixNano())
@@ -105,8 +74,6 @@ func attemptInfection(source *Animal, target *Animal, v *Virus) bool {
 	return false
 }
 
-// -------------------- Display --------------------
-
 func printStatus(animals map[string]*Animal) {
 	fmt.Println("\n📊 Infection Status:")
 	for _, a := range animals {
@@ -114,24 +81,24 @@ func printStatus(animals map[string]*Animal) {
 		if a.Infected {
 			status = "☣️  INFECTED"
 		}
-		fmt.Printf(" - %-15s : %s\n", a.Name, status)
+		fmt.Printf(" - %-20s : %s\n", a.Name, status)
 	}
 	fmt.Println()
 }
 
-// -------------------- Player Choice --------------------
+// -------- Player Choice --------
 
 func chooseTarget(player *Animal, animals map[string]*Animal) *Animal {
 	reader := bufio.NewReader(os.Stdin)
 
-	validTargets := []string{}
+	var validTargets []string
 	fmt.Println("\nWho do you want to infect?")
 
 	i := 1
-	for _, name := range player.Contacts {
-		if animals[name] != nil && !animals[name].Infected {
-			fmt.Printf("%d) %s\n", i, name)
-			validTargets = append(validTargets, name)
+	for _, contact := range player.Contacts {
+		if animals[contact] != nil && !animals[contact].Infected {
+			fmt.Printf("%d) %s\n", i, contact)
+			validTargets = append(validTargets, contact)
 			i++
 		}
 	}
@@ -143,15 +110,13 @@ func chooseTarget(player *Animal, animals map[string]*Animal) *Animal {
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
 
-		// convert numeric selection
 		for idx, val := range validTargets {
 			if input == fmt.Sprint(idx+1) || strings.EqualFold(input, val) {
 				return animals[val]
 			}
 		}
 
-		// skip
-		if input == fmt.Sprint(i) || strings.EqualFold(input, "skip") {
+		if input == fmt.Sprint(i) {
 			return nil
 		}
 
@@ -159,17 +124,15 @@ func chooseTarget(player *Animal, animals map[string]*Animal) *Animal {
 	}
 }
 
-// -------------------- Starter Selection --------------------
+// -------- Starter Selection --------
 
 func askStarterAnimal(animals map[string]*Animal) string {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Choose your starting infected animal:")
 
 	i := 1
-	options := []string{}
 	for name := range animals {
 		fmt.Printf("%d) %s\n", i, name)
-		options = append(options, name)
 		i++
 	}
 
@@ -186,10 +149,11 @@ func askStarterAnimal(animals map[string]*Animal) string {
 	}
 }
 
-// -------------------- Game Loop --------------------
+// -------- Main Game Loop --------
 
 func main() {
-	animals := LoadYellowstoneAnimals()
+	animals := LoadAnimalsFromJSON("data/yellowstone_animals.json")
+
 	virus := &Virus{Modes: []string{"Bite"}, Strength: 1.0}
 
 	start := askStarterAnimal(animals)
@@ -207,7 +171,7 @@ func main() {
 		if target != nil {
 			attemptInfection(player, target, virus)
 		} else {
-			fmt.Println("⏸ Skipping turn...")
+			fmt.Println("⏸ Skipped turn.")
 		}
 
 		time.Sleep(time.Second)
