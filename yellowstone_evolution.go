@@ -35,7 +35,7 @@ type Animal struct {
 }
 
 func (a *Animal) GetImagePath() string {
-	return fmt.Sprintf("animals/%s.png", a.Name)
+	return fmt.Sprintf("png/%s.png", a.Name)
 }
 
 type Virus struct {
