@@ -1,0 +1,38 @@
+{
+  "Caddisfly Larva": {
+    "FunFact": "Caddisfly larvae build protective cases out of sand, shells, and leaves.",
+    "Reason": "Their ecosystem contact is almost exclusively aquatic and microscopic — infection can't realistically spread from them."
+  },
+  "Short-Horned Lizard": {
+    "FunFact": "Short-horned lizards can squirt blood from their eyes when threatened.",
+    "Reason": "Their defensive isolation and low interaction with predators make infection improbable."
+  },
+  "Mule Deer": {
+    "FunFact": "Mule deer can jump up to 8 feet in a single bound.",
+    "Reason": "They are extremely isolated and rarely interact with other animals long enough to transmit disease."
+  },
+  "Yellow-Bellied Marmot": {
+    "FunFact": "Yellow-bellied marmots spend nearly 8 months of the year hibernating.",
+    "Reason": "Because of their long hibernation cycle, infection probability is nearly zero — they disappear before spread is possible."
+  },
+  "Porcupine": {
+    "FunFact": "A porcupine has about 30,000 quills!",
+    "Reason": "Their quills deter most predators, so they have very limited physical contact with other species."
+  },
+  "Pronghorn": {
+    "FunFact": "Pronghorn are the second-fastest land animal on Earth.",
+    "Reason": "They outrun every predator — meaning the virus cannot realistically spread in gameplay conditions."
+  },
+  "Bison": {
+    "FunFact": "Bison are the largest land mammals in North America.",
+    "Reason": "Their thick hide and herd behavior make direct infection unlikely."
+  },
+  "Moose": {
+    "FunFact": "Moose are very solitary animals except during mating season.",
+    "Reason": "Because of their isolation, infection spread is statistically insignificant in Yellowstone."
+  },
+  "Bald Eagle": {
+    "FunFact": "Bald eagles can spot prey up to 3 miles away.",
+    "Reason": "They rarely interact physically with disease vectors, making infection unrealistic."
+  }
+}
