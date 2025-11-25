@@ -1,74 +1,266 @@
 {
-  "animals": [
+  "Level1": [
     {
-      "Name": "Gray Wolf",
-      "Level": 5,
-      "Mobility": "High",
-      "Intelligence": 7,
-      "Contacts": ["Elk", "Bison", "Wolf"],
+      "Name": "Grasshopper",
+      "Level": 1,
+      "Mobility": "Walk",
+      "Intelligence": 1,
       "Infected": false,
-      "InfectionRate": 0.10,
-      "Location": "Lamar Valley"
+      "InfectionRate": 0.20,
+      "Location": "Grassland",
+      "RedHerring": false
     },
     {
-      "Name": "American Bison",
-      "Level": 3,
-      "Mobility": "Medium",
-      "Intelligence": 3,
-      "Contacts": ["Bison", "Elk", "Grizzly Bear"],
+      "Name": "Deer Mouse",
+      "Level": 1,
+      "Mobility": "Walk",
+      "Intelligence": 2,
+      "Infected": false,
+      "InfectionRate": 0.45,
+      "Location": "ForestFloor",
+      "RedHerring": false
+    },
+    {
+      "Name": "Caddisfly Larva",
+      "Level": 1,
+      "Mobility": "Swim",
+      "Intelligence": 1,
       "Infected": false,
       "InfectionRate": 0.05,
-      "Location": "Hayden Valley"
+      "Location": "River",
+      "RedHerring": true
     },
     {
-      "Name": "Elk",
-      "Level": 2,
-      "Mobility": "Medium",
-      "Intelligence": 3,
-      "Contacts": ["Elk", "Wolf", "Bison"],
-      "Infected": false,
-      "InfectionRate": 0.06,
-      "Location": "Mammoth Hot Springs"
-    },
-    {
-      "Name": "Grizzly Bear",
-      "Level": 6,
-      "Mobility": "High",
-      "Intelligence": 6,
-      "Contacts": ["Bison", "Elk", "Black Bear"],
-      "Infected": false,
-      "InfectionRate": 0.12,
-      "Location": "Greater Yellowstone Ecosystem"
-    },
-    {
-      "Name": "Cutthroat Trout",
+      "Name": "Snowshoe Hare",
       "Level": 1,
-      "Mobility": "Low",
-      "Intelligence": 1,
-      "Contacts": ["Trout"],
+      "Mobility": "Walk",
+      "Intelligence": 2,
       "Infected": false,
-      "InfectionRate": 0.02,
-      "Location": "Yellowstone Lake"
+      "InfectionRate": 0.30,
+      "Location": "Meadow",
+      "RedHerring": false
     },
+    {
+      "Name": "Short-Horned Lizard",
+      "Level": 1,
+      "Mobility": "Walk",
+      "Intelligence": 1,
+      "Infected": false,
+      "InfectionRate": 0.10,
+      "Location": "RockySlope",
+      "RedHerring": true
+    }
+  ],
+
+  "Level2": [
     {
       "Name": "Red Fox",
       "Level": 2,
-      "Mobility": "High",
-      "Intelligence": 5,
-      "Contacts": ["Rabbit", "Squirrel", "Fox"],
+      "Mobility": "Walk",
+      "Intelligence": 4,
       "Infected": false,
-      "InfectionRate": 0.08,
-      "Location": "Madison River Area"
+      "InfectionRate": 0.80,
+      "Location": "Forest",
+      "RedHerring": false
+    },
+    {
+      "Name": "Garter Snake",
+      "Level": 2,
+      "Mobility": "Burrow",
+      "Intelligence": 2,
+      "Infected": false,
+      "InfectionRate": 0.50,
+      "Location": "Riverbank",
+      "RedHerring": false
+    },
+    {
+      "Name": "Striped Skunk",
+      "Level": 2,
+      "Mobility": "Walk",
+      "Intelligence": 3,
+      "Infected": false,
+      "InfectionRate": 0.25,
+      "Location": "Meadow",
+      "RedHerring": false
+    },
+    {
+      "Name": "Mule Deer",
+      "Level": 2,
+      "Mobility": "Walk",
+      "Intelligence": 2,
+      "Infected": false,
+      "InfectionRate": 0.10,
+      "Location": "Valley",
+      "RedHerring": true
+    },
+    {
+      "Name": "Yellow-Bellied Marmot",
+      "Level": 2,
+      "Mobility": "Burrow",
+      "Intelligence": 2,
+      "Infected": false,
+      "InfectionRate": 0.05,
+      "Location": "RockySlope",
+      "RedHerring": true
+    }
+  ],
+
+  "Level3": [
+    {
+      "Name": "Coyote",
+      "Level": 3,
+      "Mobility": "Walk",
+      "Intelligence": 5,
+      "Infected": false,
+      "InfectionRate": 0.75,
+      "Location": "Valley",
+      "RedHerring": false
+    },
+    {
+      "Name": "Bobcat",
+      "Level": 3,
+      "Mobility": "Walk",
+      "Intelligence": 6,
+      "Infected": false,
+      "InfectionRate": 0.55,
+      "Location": "Forest",
+      "RedHerring": false
+    },
+    {
+      "Name": "Great Horned Owl",
+      "Level": 3,
+      "Mobility": "Fly",
+      "Intelligence": 4,
+      "Infected": false,
+      "InfectionRate": 0.35,
+      "Location": "ForestEdge",
+      "RedHerring": false
+    },
+    {
+      "Name": "Porcupine",
+      "Level": 3,
+      "Mobility": "Walk",
+      "Intelligence": 2,
+      "Infected": false,
+      "InfectionRate": 0.05,
+      "Location": "Forest",
+      "RedHerring": true
+    },
+    {
+      "Name": "Elk",
+      "Level": 3,
+      "Mobility": "Walk",
+      "Intelligence": 3,
+      "Infected": false,
+      "InfectionRate": 0.12,
+      "Location": "Meadow",
+      "RedHerring": true
+    }
+  ],
+
+  "Level4": [
+    {
+      "Name": "Gray Wolf",
+      "Level": 4,
+      "Mobility": "Walk",
+      "Intelligence": 7,
+      "Infected": false,
+      "InfectionRate": 0.85,
+      "Location": "Valley",
+      "RedHerring": false
+    },
+    {
+      "Name": "Mountain Lion",
+      "Level": 4,
+      "Mobility": "Walk",
+      "Intelligence": 8,
+      "Infected": false,
+      "InfectionRate": 0.70,
+      "Location": "Ridge",
+      "RedHerring": false
+    },
+    {
+      "Name": "Grizzly Bear",
+      "Level": 4,
+      "Mobility": "Walk",
+      "Intelligence": 6,
+      "Infected": false,
+      "InfectionRate": 0.60,
+      "Location": "Forest",
+      "RedHerring": false
+    },
+    {
+      "Name": "Pronghorn",
+      "Level": 4,
+      "Mobility": "Walk",
+      "Intelligence": 3,
+      "Infected": false,
+      "InfectionRate": 0.10,
+      "Location": "Meadow",
+      "RedHerring": true
+    },
+    {
+      "Name": "Bison",
+      "Level": 4,
+      "Mobility": "Walk",
+      "Intelligence": 3,
+      "Infected": false,
+      "InfectionRate": 0.05,
+      "Location": "Valley",
+      "RedHerring": true
+    }
+  ],
+
+  "Level5": [
+    {
+      "Name": "Human Ranger",
+      "Level": 5,
+      "Mobility": "Walk",
+      "Intelligence": 10,
+      "Infected": false,
+      "InfectionRate": 0.95,
+      "Location": "Outpost",
+      "RedHerring": false
+    },
+    {
+      "Name": "Bald Eagle",
+      "Level": 5,
+      "Mobility": "Fly",
+      "Intelligence": 5,
+      "Infected": false,
+      "InfectionRate": 0.05,
+      "Location": "River",
+      "RedHerring": true
     },
     {
       "Name": "Moose",
-      "Level": 4,
-      "Mobility": "Medium",
+      "Level": 5,
+      "Mobility": "Walk",
       "Intelligence": 4,
-      "Contacts": ["Moose", "Wolf"],
       "Infected": false,
-      "InfectionRate": 0.04,
-      "Location": "Pelican Valley"
+      "InfectionRate": 0.10,
+      "Location": "Marsh",
+      "RedHerring": true
+    },
+    {
+      "Name": "Scavenger Raven",
+      "Level": 5,
+      "Mobility": "Fly",
+      "Intelligence": 6,
+      "Infected": false,
+      "InfectionRate": 0.45,
+      "Location": "ForestEdge",
+      "RedHerring": false
+    },
+    {
+      "Name": "Coywolf Hybrid",
+      "Level": 5,
+      "Mobility": "Walk",
+      "Intelligence": 7,
+      "Infected": false,
+      "InfectionRate": 0.55,
+      "Location": "Valley",
+      "RedHerring": false
     }
   ]
 }
