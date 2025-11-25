@@ -1,0 +1,74 @@
+{
+  "animals": [
+    {
+      "Name": "Gray Wolf",
+      "Level": 5,
+      "Mobility": "High",
+      "Intelligence": 7,
+      "Contacts": ["Elk", "Bison", "Wolf"],
+      "Infected": false,
+      "InfectionRate": 0.10,
+      "Location": "Lamar Valley"
+    },
+    {
+      "Name": "American Bison",
+      "Level": 3,
+      "Mobility": "Medium",
+      "Intelligence": 3,
+      "Contacts": ["Bison", "Elk", "Grizzly Bear"],
+      "Infected": false,
+      "InfectionRate": 0.05,
+      "Location": "Hayden Valley"
+    },
+    {
+      "Name": "Elk",
+      "Level": 2,
+      "Mobility": "Medium",
+      "Intelligence": 3,
+      "Contacts": ["Elk", "Wolf", "Bison"],
+      "Infected": false,
+      "InfectionRate": 0.06,
+      "Location": "Mammoth Hot Springs"
+    },
+    {
+      "Name": "Grizzly Bear",
+      "Level": 6,
+      "Mobility": "High",
+      "Intelligence": 6,
+      "Contacts": ["Bison", "Elk", "Black Bear"],
+      "Infected": false,
+      "InfectionRate": 0.12,
+      "Location": "Greater Yellowstone Ecosystem"
+    },
+    {
+      "Name": "Cutthroat Trout",
+      "Level": 1,
+      "Mobility": "Low",
+      "Intelligence": 1,
+      "Contacts": ["Trout"],
+      "Infected": false,
+      "InfectionRate": 0.02,
+      "Location": "Yellowstone Lake"
+    },
+    {
+      "Name": "Red Fox",
+      "Level": 2,
+      "Mobility": "High",
+      "Intelligence": 5,
+      "Contacts": ["Rabbit", "Squirrel", "Fox"],
+      "Infected": false,
+      "InfectionRate": 0.08,
+      "Location": "Madison River Area"
+    },
+    {
+      "Name": "Moose",
+      "Level": 4,
+      "Mobility": "Medium",
+      "Intelligence": 4,
+      "Contacts": ["Moose", "Wolf"],
+      "Infected": false,
+      "InfectionRate": 0.04,
+      "Location": "Pelican Valley"
+    }
+  ]
+}
