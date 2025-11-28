@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 
@@ -18,9 +19,83 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/anthonynsimon/bild/effect"
 	"github.com/anthonynsimon/bild/imgio"
+
+	// Audio
+	"github.com/faiface/beep"
+	"github.com/faiface/beep/mp3"
+	"github.com/faiface/beep/speaker"
 )
 
-// -------- DATA --------
+// ===== AUDIO =====
+
+var musicCtrl *beep.Ctrl
+var musicPlaying bool
+
+func PlayMusicLoop(path string) error {
+	if musicPlaying {
+		return nil
+	}
+
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+
+	streamer, format, err := mp3.Decode(f)
+	if err != nil {
+		return err
+	}
+
+	loop := beep.Loop(-1, streamer)
+
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	musicCtrl = &beep.Ctrl{Streamer: loop, Paused: false}
+	speaker.Play(musicCtrl)
+
+	musicPlaying = true
+	return nil
+}
+
+func PlaySoundEffect(path string) {
+	f, err := os.Open(path)
+	if err != nil {
+		fmt.Println("SFX error:", err)
+		return
+	}
+
+	streamer, _, err := mp3.Decode(f)
+	if err != nil {
+		fmt.Println("SFX decode error:", err)
+		return
+	}
+
+	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
+		_ = f.Close()
+	})))
+}
+
+// ===== UNIVERSAL CLICK INTERCEPTOR =====
+
+type ClickInterceptor struct {
+	widget.BaseWidget
+	content fyne.CanvasObject
+}
+
+func NewClickInterceptor(content fyne.CanvasObject) *ClickInterceptor {
+	c := &ClickInterceptor{content: content}
+	c.ExtendBaseWidget(c)
+	return c
+}
+
+func (c *ClickInterceptor) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(c.content)
+}
+
+func (c *ClickInterceptor) MouseDown(*fyne.PointEvent) {
+	PlaySoundEffect("sfx/click.mp3")
+}
+
+// ===== GAME DATA =====
 
 type Animal struct {
 	Name          string   `json:"Name"`
@@ -67,7 +142,7 @@ type GameState struct {
 	score      int
 }
 
-// -------- LOADING --------
+// ===== LOADING =====
 
 func LoadAnimalsFromJSON(path string) (map[string]*Animal, int) {
 	data, _ := ioutil.ReadFile(path)
@@ -98,7 +173,7 @@ func LoadRedHerringFacts(path string) map[string]RedHerringInfo {
 	return out
 }
 
-// -------- UI HELPERS --------
+// ===== UI HELPERS =====
 
 func loadBackground() *canvas.Image {
 	bg := canvas.NewImageFromFile("yellowstone.png")
@@ -120,7 +195,7 @@ func loadAnimalImage(path string, invert bool, size float32) *canvas.Image {
 	return i
 }
 
-// -------- GAME MATH --------
+// ===== SCORE =====
 
 func calculateScore(state *GameState) int {
 	secs := int(time.Since(state.stats.StartTime).Seconds())
@@ -131,7 +206,7 @@ func calculateScore(state *GameState) int {
 	return score
 }
 
-// -------- ANIMATION --------
+// ===== ANIMATION =====
 
 func showSpookyAnimation(win fyne.Window, state *GameState, imgPath, name string, after func()) {
 	bg := loadBackground()
@@ -141,14 +216,14 @@ func showSpookyAnimation(win fyne.Window, state *GameState, imgPath, name string
 	txt.TextSize = 34
 	txt.Alignment = fyne.TextAlignCenter
 
-	containerBody := container.NewVBox(
+	body := container.NewVBox(
 		layout.NewSpacer(),
 		container.NewCenter(txt),
 		container.NewCenter(img),
 		layout.NewSpacer(),
 	)
 
-	win.SetContent(container.NewMax(bg, container.NewCenter(containerBody)))
+	win.SetContent(NewClickInterceptor(container.NewMax(bg, container.NewCenter(body))))
 
 	go func() {
 		for _, size := range []float32{430, 520, 460, 560, 430} {
@@ -161,39 +236,44 @@ func showSpookyAnimation(win fyne.Window, state *GameState, imgPath, name string
 	}()
 }
 
-// -------- SCREENS --------
+// ===== SCREENS =====
 
 func createWinScreen(app fyne.App, win fyne.Window, state *GameState) fyne.CanvasObject {
 
+	// Play victory sound once
+	go func() {
+		// Small delay so UI loads first (prevents the thread warning)
+		time.Sleep(200 * time.Millisecond)
+		fyne.Do(func() {
+			PlaySoundEffect("sfx/victory.mp3")
+		})
+
+	}()
+
 	finalScore := calculateScore(state)
 
-	// BIG victory title
 	title := canvas.NewText("👑 APEX PREDATOR REACHED 👑", color.White)
 	title.TextSize = 40
 	title.Alignment = fyne.TextAlignCenter
 
-	// sanitize name before printing
 	cleanName := strings.TrimSpace(strings.ToValidUTF8(state.playerName, ""))
 
-	// Bigger score text
-	info := canvas.NewText(fmt.Sprintf("Final Host: %s Score: %d",
-		cleanName, finalScore), color.White)
+	info := canvas.NewText(fmt.Sprintf("Final Host: %s — Score: %d", cleanName, finalScore), color.White)
 	info.TextSize = 28
 	info.Alignment = fyne.TextAlignCenter
 
-	return container.NewMax(
+	return NewClickInterceptor(container.NewMax(
 		loadBackground(),
 		container.NewCenter(
 			container.NewVBox(
 				layout.NewSpacer(),
-				container.NewCenter(title),
-				container.NewCenter(info),
+				title,
+				info,
 				layout.NewSpacer(),
 			),
 		),
-	)
+	))
 }
-
 
 func createGameScreen(app fyne.App, win fyne.Window, state *GameState) fyne.CanvasObject {
 
@@ -203,12 +283,7 @@ func createGameScreen(app fyne.App, win fyne.Window, state *GameState) fyne.Canv
 	state.timerStop = make(chan bool)
 
 	timerText := canvas.NewText("⏱ 0s", color.White)
-	timerText.TextSize = 22
-	timerText.Alignment = fyne.TextAlignCenter
-
 	scoreText := canvas.NewText(fmt.Sprintf("Score: %d", calculateScore(state)), color.White)
-	scoreText.TextSize = 22
-	scoreText.Alignment = fyne.TextAlignCenter
 
 	go func() {
 		for {
@@ -216,7 +291,7 @@ func createGameScreen(app fyne.App, win fyne.Window, state *GameState) fyne.Canv
 			case <-state.timerStop:
 				return
 			default:
-				time.Sleep(time.Second)
+				time.Sleep(1 * time.Second)
 				timerText.Text = fmt.Sprintf("⏱ %ds", int(time.Since(state.stats.StartTime).Seconds()))
 				scoreText.Text = fmt.Sprintf("Score: %d", calculateScore(state))
 				timerText.Refresh()
@@ -228,8 +303,7 @@ func createGameScreen(app fyne.App, win fyne.Window, state *GameState) fyne.Canv
 	player := state.animals[state.playerName]
 
 	header := container.NewVBox(
-		container.NewCenter(widget.NewLabelWithStyle(fmt.Sprintf("Day %d — %s (Level %d)",
-			state.currentDay, player.Name, player.Level), fyne.TextAlignCenter, fyne.TextStyle{Bold: true})),
+		container.NewCenter(widget.NewLabelWithStyle(fmt.Sprintf("Day %d — %s (Level %d)", state.currentDay, player.Name, player.Level), fyne.TextAlignCenter, fyne.TextStyle{Bold: true})),
 		container.NewCenter(timerText),
 		container.NewCenter(scoreText),
 	)
@@ -237,6 +311,7 @@ func createGameScreen(app fyne.App, win fyne.Window, state *GameState) fyne.Canv
 	var cards []fyne.CanvasObject
 
 	for _, target := range state.animals {
+
 		if target.Infected || (target.Level != player.Level && target.Level != player.Level+1) {
 			continue
 		}
@@ -246,17 +321,21 @@ func createGameScreen(app fyne.App, win fyne.Window, state *GameState) fyne.Canv
 
 		btn := widget.NewButton("INFECT", func(t *Animal) func() {
 			return func() {
+
 				state.stats.Attempts++
+
 				if t.RedHerring {
+					PlaySoundEffect("sfx/fail.mp3")
 					info := state.redFacts[t.Name]
-					dialog.ShowInformation("🚫 RED HERRING", fmt.Sprintf("%s cannot be infected.\n\n🐾 %s\n📌 %s",
-						t.Name, info.FunFact, info.Reason), win)
+					dialog.ShowInformation("🚫 RED HERRING", fmt.Sprintf("%s cannot be infected.\n🐾 %s\n📌 %s", t.Name, info.FunFact, info.Reason), win)
 					return
 				}
 
 				if rand.Float64() < t.InfectionRate*state.virus.Strength {
+					PlaySoundEffect("sfx/success.mp3")
 					t.Infected = true
 					state.currentDay++
+
 					if t.Level > player.Level {
 						state.stats.NextLevelInfections++
 					} else {
@@ -264,36 +343,36 @@ func createGameScreen(app fyne.App, win fyne.Window, state *GameState) fyne.Canv
 					}
 
 					showSpookyAnimation(win, state, t.GetImagePath(), t.Name, func() {
+
 						state.playerName = t.Name
+
 						if t.Level == state.maxLevel {
 							win.SetContent(createWinScreen(app, win, state))
 							return
 						}
+
 						win.SetContent(createGameScreen(app, win, state))
 					})
+
 					return
 				}
+
+				PlaySoundEffect("sfx/fail.mp3")
 				dialog.ShowInformation("Failed", t.Name+" resisted infection.", win)
 			}
 		}(target))
 
-		card := container.NewVBox(
-			container.NewCenter(img),
-			container.NewCenter(name),
-			container.NewCenter(btn),
-		)
-
+		card := container.NewVBox(container.NewCenter(img), container.NewCenter(name), container.NewCenter(btn))
 		cards = append(cards, card)
 	}
 
 	grid := container.NewGridWithColumns(3, cards...)
-	scroll := container.NewScroll(grid)
 
-	return container.NewMax(loadBackground(), container.NewBorder(header, nil, nil, nil, scroll))
+	return NewClickInterceptor(container.NewMax(loadBackground(),
+		container.NewBorder(header, nil, nil, nil, container.NewScroll(grid))))
 }
 
 func createStarterSelectionScreen(app fyne.App, win fyne.Window, state *GameState) fyne.CanvasObject {
-
 	var cards []fyne.CanvasObject
 
 	for _, a := range state.animals {
@@ -306,16 +385,21 @@ func createStarterSelectionScreen(app fyne.App, win fyne.Window, state *GameStat
 
 		btn := widget.NewButton("Choose", func(an *Animal) func() {
 			return func() {
+
 				if an.RedHerring {
+					PlaySoundEffect("sfx/fail.mp3")
 					info := state.redFacts[an.Name]
 					dialog.ShowInformation("🚫 Cannot Start Here",
-						fmt.Sprintf("%s cannot be patient zero.\n\n🐾 %s\n📌 %s", an.Name, info.FunFact, info.Reason), win)
+						fmt.Sprintf("%s cannot be patient zero.\n🐾 %s\n📌 %s", an.Name, info.FunFact, info.Reason), win)
 					return
 				}
+
+				PlaySoundEffect("sfx/success.mp3")
 
 				state.playerName = an.Name
 				an.Infected = true
 				state.stats.StartTime = time.Now()
+
 				win.SetContent(createGameScreen(app, win, state))
 			}
 		}(a))
@@ -324,59 +408,46 @@ func createStarterSelectionScreen(app fyne.App, win fyne.Window, state *GameStat
 		cards = append(cards, card)
 	}
 
-	grid := container.NewGridWithColumns(3, cards...)
-	scroll := container.NewScroll(grid)
-
-	header := widget.NewLabelWithStyle("Choose Your Patient Zero", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-
-	return container.NewMax(loadBackground(), container.NewBorder(header, nil, nil, nil, scroll))
+	return NewClickInterceptor(container.NewMax(loadBackground(),
+		container.NewBorder(widget.NewLabelWithStyle("Choose Your Patient Zero", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+			nil, nil, nil, container.NewScroll(container.NewGridWithColumns(3, cards...)))))
 }
 
 func createIntroScreen(app fyne.App, win fyne.Window, state *GameState) fyne.CanvasObject {
 
-	title := widget.NewLabelWithStyle("🦠 YELLOWSTONE OUTBREAK 🦠", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
+	title := widget.NewLabelWithStyle("🦠 YELLOWSTONE OUTBREAK 🦠",
+		fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 
 	sub := widget.NewLabel(
 		"Deep beneath the soil of Yellowstone National Park, something ancient awakens.\n" +
-		"For millennia, it has slept. Dormant, waiting.\n\n" +
-		"But now conditions are perfect.\n" +
-		"A new pathogen has emerged. Adaptable, hungry, and capable of evolving through infection.\n\n" +
-		"Your goal is simple:\n" +
-		"📍 Start as a low-level host.\n" +
-		"📍 Infect animals across Yellowstone.\n" +
-		"📍 Evolve by successfully infecting higher-level species.\n\n" +
-		"⚠️ Beware: some animals are RED HERRINGS.\n" +
-		"They cannot spread your plague: choosing them wastes time.\n\n" +
-		"The clock is ticking.\n" +
-		"The ecosystem will not remain unprepared forever.\n\n" +
-		"Can you climb the food chain…\n" +
-		"and become the uncontested APEX pathogen?")
+			"For millennia, it has slept. Dormant, waiting.\n\n" +
+			"But now, conditions are perfect.\n" +
+			"A new pathogen emerges — adaptable, hungry, unstoppable.\n\n" +
+			"Your mission:\n" +
+			"• Start at the bottom of the food chain.\n" +
+			"• Infect wildlife.\n" +
+			"• Evolve.\n\n" +
+			"⚠️ Some species are RED HERRINGS — a dead end.\n" +
+			"Choose wisely.\n\n" +
+			"Will you rise to become Yellowstone’s apex pathogen?",
+	)
 
 	sub.Alignment = fyne.TextAlignCenter
-	sub.TextStyle = fyne.TextStyle{Bold: true}   // <-- THIS BOLDENS IT
-
 
 	start := widget.NewButton("Begin Infection", func() {
 		win.SetContent(createStarterSelectionScreen(app, win, state))
 	})
 
-	return container.NewMax(loadBackground(),
-		container.NewCenter(container.NewVBox(
-			layout.NewSpacer(),
-			container.NewCenter(title),
-			container.NewCenter(sub),
-			layout.NewSpacer(),
-			container.NewCenter(start),
-			layout.NewSpacer(),
-		)),
-	)
+	return NewClickInterceptor(container.NewMax(
+		loadBackground(),
+		container.NewCenter(container.NewVBox(layout.NewSpacer(), title, sub, layout.NewSpacer(), start, layout.NewSpacer())),
+	))
 }
 
-
-// -------- MAIN --------
+// ===== MAIN =====
 
 func main() {
-	rand.Seed(time.Now().Unix())
+	rand.Seed(time.Now().UnixNano())
 
 	application := app.New()
 	win := application.NewWindow("🦠 Yellowstone Outbreak")
@@ -385,7 +456,7 @@ func main() {
 	animals, max := LoadAnimalsFromJSON("yellowstone_animals.json")
 
 	state := &GameState{
-		animals: animals,
+		animals:  animals,
 		maxLevel: max,
 		virus: &Virus{
 			Modes:    []string{"Bite"},
@@ -394,6 +465,8 @@ func main() {
 		redFacts: LoadRedHerringFacts("red_herring_facts.json"),
 		stats:    Stats{StartTime: time.Now()},
 	}
+
+	_ = PlayMusicLoop("music/background.mp3")
 
 	win.SetContent(createIntroScreen(application, win, state))
 	win.ShowAndRun()
